@@ -8,10 +8,16 @@ We run this on our [build server](https://teamcity.archoninfosys.com/) to set th
 
 ## Usage
 
+First, install the package globally:
+
+```
+yarn global add workspace-versioner
+```
+
 Run the following command from your workspace root:
 
 ```
-npx workspace-versioner 1.2.3
+workspace-versioner 1.2.3
 ```
 
 This will version all packages within the workspace to `v1.2.3`.
