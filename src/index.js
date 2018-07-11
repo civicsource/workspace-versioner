@@ -8,4 +8,5 @@ console.log(`Workspace Versioner v${version}`);
 
 run().then(null, err => {
 	console.error(colors.red(err.message));
+	process.exit(1);
 });
