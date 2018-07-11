@@ -14,31 +14,21 @@ export default async function() {
 	const version = semver.valid(process.argv[2]);
 	const dir = process.argv[3] || process.cwd();
 
-	const rootPkg = await validateInput(version, dir);
+	const rootPkgPath = join(dir, "package.json");
+	const rootPkg = await validateInput(version, rootPkgPath);
 
 	const pkgs = await loadWorkspacePackages(dir, rootPkg.workspaces);
 
-	for (const { filepath, dependencies } of pkgs) {
-		let data = { version };
-
-		if (dependencies) {
-			// if this package references any of the other packages in the workspace, update the version there, too
-			for (const pkgName of pkgs.map(p => p.name)) {
-				if (dependencies[pkgName]) {
-					data.dependencies = {
-						...dependencies,
-						[pkgName]: `${version}`
-					};
-				}
-			}
-		}
-
-		json.update(filepath, data);
-		console.log(colors.green(`Updated ${filepath}`));
+	if (pkgs) {
+		updateWorkspacePackageVersions(pkgs, version);
+	} else {
+		// no workspaces found; just update the root package.json version
+		json.update(rootPkgPath, { version });
+		console.log(colors.green(`Updated ${rootPkgPath}`));
 	}
 }
 
-async function validateInput(version, dir) {
+async function validateInput(version, rootPkgPath) {
 	if (!version) {
 		throw new Error(
 			"Missing or invalid version number supplied. It should be the first argument to the CLI."
@@ -47,19 +37,12 @@ async function validateInput(version, dir) {
 		console.log(`Preparing to update workspace version to ${version}`);
 	}
 
-	const rootPkgPath = join(dir, "package.json");
-	const rootPkg = require(rootPkgPath);
-
-	if (!rootPkg.workspaces) {
-		throw new Error(
-			`The root package.json at ${rootPkgPath} does not contain a yarn workspace.`
-		);
-	}
-
-	return rootPkg;
+	return require(rootPkgPath);
 }
 
 async function loadWorkspacePackages(dir, workspaces) {
+	if (!workspaces) return null;
+
 	const pkgs = [];
 
 	for (const workspace of workspaces) {
@@ -82,4 +65,25 @@ async function loadWorkspacePackages(dir, workspaces) {
 	}
 
 	return pkgs;
+}
+
+function updateWorkspacePackageVersions(pkgs, version) {
+	for (const { filepath, dependencies } of pkgs) {
+		let data = { version };
+
+		if (dependencies) {
+			// if this package references any of the other packages in the workspace, update the version there, too
+			for (const pkgName of pkgs.map(p => p.name)) {
+				if (dependencies[pkgName]) {
+					data.dependencies = {
+						...dependencies,
+						[pkgName]: `${version}`
+					};
+				}
+			}
+		}
+
+		json.update(filepath, data);
+		console.log(colors.green(`Updated ${filepath}`));
+	}
 }

@@ -2,9 +2,9 @@
 
 > A poor man's [lerna](https://github.com/lerna/lerna).
 
-This tool will set the version field for all `package.json`s in a [yarn workspace](https://yarnpkg.com/lang/en/docs/workspaces/) to the same specified version. It will also take care of updating any cross references within the workspace to that same version as well.
+This tool will set the version field for all `package.json`s in a [yarn workspace](https://yarnpkg.com/lang/en/docs/workspaces/) to the same specified version. It will also take care of updating any cross references within the workspace to that same version as well. If no workspaces are found in the root `package.json`, it will just update the root `package.json` `version` field.
 
-We run this on our [build server](https://teamcity.archoninfosys.com/) to set the version number in our frontend workspace to the same build-server generated version number.
+We run this on our [build server](https://teamcity.archoninfosys.com/) to set the version number in our frontend workspace to the build-server generated version number.
 
 ## Usage
 
