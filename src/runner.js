@@ -72,14 +72,20 @@ function updateWorkspacePackageVersions(pkgs, version) {
 		let data = { version };
 
 		if (dependencies) {
+			let newDeps;
+
 			// if this package references any of the other packages in the workspace, update the version there, too
 			for (const pkgName of pkgs.map(p => p.name)) {
 				if (dependencies[pkgName]) {
-					data.dependencies = {
-						...dependencies,
+					newDeps = {
+						...(newDeps || dependencies),
 						[pkgName]: `${version}`
 					};
 				}
+			}
+
+			if (newDeps) {
+				data.dependencies = newDeps;
 			}
 		}
 
